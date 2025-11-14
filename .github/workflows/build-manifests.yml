@@ -38,7 +38,6 @@ jobs:
         run: |
           echo "Files changed:"
           git status
-          ls -l
           if [[ -n "$(git status --porcelain)" ]]; then
             git config user.name "GitHub Actions"
             git config user.email "actions@github.com"
