@@ -1,8 +1,8 @@
 # ha-yainternetometr
 > Интеграция для Home Assistant для измерения скорости интернета, на базе Я.Интернетометр.
 
-![Latest Release](https://img.shields.io/github/v/release/ErilovNikita/ha-yainternetometr?label=Latest%20Release)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Latest Release](https://img.shields.io/github/v/release/ErilovNikita/ha-yainternetometr?label=Latest%20Release)](https://github.com/ErilovNikita/ha-yainternetometr/releases/latest)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/default)
 [![HACS Validate](https://github.com/ErilovNikita/ha-yainternetometr/actions/workflows/hacs-validate.yml/badge.svg?branch=main)](https://github.com/ErilovNikita/ha-yainternetometr/actions/workflows/hacs-validate.yml)
 
