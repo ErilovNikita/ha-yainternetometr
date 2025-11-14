@@ -35,6 +35,7 @@ def main():
 
     manifest_json = json.loads(manifest)
 
+    output_file.parent.mkdir(parents=True, exist_ok=True)
     with output_file.open("w", encoding="utf-8") as f:
         json.dump(manifest_json, f, indent=2, ensure_ascii=False)
 
