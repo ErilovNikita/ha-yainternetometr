@@ -36,13 +36,15 @@ jobs:
 
       - name: Commit updated manifests
         run: |
+          echo "Files changed:"
+          git status
           if [[ -n "$(git status --porcelain)" ]]; then
             git config user.name "GitHub Actions"
             git config user.email "actions@github.com"
-            git add custom_components/**/manifest.json
-            git add hacs.json
+            git add -f custom_components/**/manifest.json || true
+            git add -f hacs.json
             git commit -m "CI: auto-regenerate manifests"
             git push
           else
-            echo "No changes in manifest.json files — skipping commit"
+            echo "No changes detected — skipping commit"
           fi
