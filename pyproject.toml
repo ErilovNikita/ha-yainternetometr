@@ -63,6 +63,6 @@ name = "Yandex Internetometr"
 domain = "yainternetometr"
 codeowner = "@minitwiks"
 country = "RU"
-config_flow = false
+config_flow = true
 homeassistant = "2025.10.0"
 persistent_directory = "custom_components/yainternetometr"
