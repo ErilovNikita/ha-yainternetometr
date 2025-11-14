@@ -21,7 +21,7 @@ def main():
 
     manifest = template.render(
         domain = hacs["domain"],
-        name = hacs["name"],
+        name = hacs["russian_name"],
         version = project["version"],
         documentation = project.get("urls", {}).get("Documentation"),
         issue_tracker = project.get("urls", {}).get("Issues"),

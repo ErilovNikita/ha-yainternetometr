@@ -20,7 +20,7 @@ def main():
         template = Template(f.read())
 
     manifest = template.render(
-        name = hacs["name"],
+        name = hacs["russian_name"],
         homeassistant = hacs.get("homeassistant", {}),
         country = hacs.get("country", {})
     )
