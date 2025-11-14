@@ -13,13 +13,12 @@ on:
 jobs:
   build-manifests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -45,10 +44,7 @@ jobs:
             git add -f custom_components/yainternetometr/manifest.json || true
             git add -f hacs.json
             git commit -m "CI: auto-regenerate manifests"
-            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
             git push origin HEAD:main
           else
             echo "No changes detected — skipping commit"
           fi
-        env:
-           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
