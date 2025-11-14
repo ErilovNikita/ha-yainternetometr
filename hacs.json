@@ -1,0 +1,9 @@
+{
+  "name": "ha-yainternetometr",
+  "homeassistant": "2025.11.0",
+  "render_readme": true,
+  "zip_release": false,
+  "country": [
+    "RU"
+  ]
+}
