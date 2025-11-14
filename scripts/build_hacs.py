@@ -30,7 +30,7 @@ def main():
     with OUTPUT_FILE.open("w", encoding="utf-8") as f:
         json.dump(manifest_json, f, indent=2, ensure_ascii=False)
 
-    print(f"✔ Generated hacs.json for {hacs['domain']} (v{project['version']})")
+    print(f"✔ Generated hacs.json for {hacs['domain']}-(v{project['version']}) at {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":
