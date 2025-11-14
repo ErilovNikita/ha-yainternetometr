@@ -38,11 +38,11 @@ jobs:
         run: |
           echo "Files changed:"
           git status
-          git add -f custom_components/yainternetometr/manifest.json || true
-          git add -f hacs.json
           if [[ -n "$(git status --porcelain)" ]]; then
             git config user.name "GitHub Actions"
             git config user.email "actions@github.com"
+            git add -f custom_components/yainternetometr/manifest.json || true
+            git add -f hacs.json
             git commit -m "CI: auto-regenerate manifests"
             git push
           else
