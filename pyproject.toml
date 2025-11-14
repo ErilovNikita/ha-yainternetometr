@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ha-yainternetometr"
+version = "0.1.0"
+description = "Integration for Home Assistant for measuring internet speed based on Yandex Internetometer."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Nikita Erilov", email = "minitwiks@gmail.com" }
+]
+keywords = ["homeassistant", "yandex", "yainternetometr", "integration", "smart-home"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Home Assistant",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Home Automation",
+]
+
+dependencies = [
+    "yaspeedtest==0.1.3",
+    "hacs-cli==0.4.3",
+    "homeassistant==2025.10.4"
+]
+
+[project.urls]
+Homepage = "https://github.com/ErilovNikita/ha-yainternetometr"
+Repository = "https://github.com/ErilovNikita/ha-yainternetometr"
+Issues = "https://github.com/ErilovNikita/ha-yainternetometr/issues"
+Documentation = "https://github.com/ErilovNikita/ha-yainternetometr#readme"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["custom_components/yainternetometr"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["custom_components.yainternetometr"]
+skip = ["__init__.py"]
+
+[tool.hacs]
+name = "YaInternetometr"
+domain = "yainternetometr"
+country = "RU"
+homeassistant = "2025.10.0"
+persistent_directory = "custom_components/yainternetometr"
