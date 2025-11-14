@@ -2,9 +2,11 @@ name: 🏗️ Build Home Assistant Manifests
 
 on:
   pull_request:
+    branches:
+      - dev
   push:
     branches:
-      - main
+      - dev
     paths:
       - "pyproject.toml"
       - "scripts/**"

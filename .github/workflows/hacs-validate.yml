@@ -1,10 +1,14 @@
-name: 📋 HACS Validate
+name: HACS Validate
 
 on:
-  workflow_run:
-    workflows: ["🏗️ Build Home Assistant Manifests"]
-    types:
-      - completed
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * 1'
 
 jobs:
   hassfest:
