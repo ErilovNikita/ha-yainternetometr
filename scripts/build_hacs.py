@@ -7,7 +7,7 @@ ROOT = Path.cwd()
 PYP_FILE = ROOT / "pyproject.toml"
 TEMPLATE_FILE = ROOT / "templates/hacs.json.j2"
 INTEGRATION_PATH = ROOT / "custom_components/yainternetometr"
-OUTPUT_FILE = INTEGRATION_PATH / "hacs.json"
+OUTPUT_FILE = ROOT / "hacs.json"
 
 def main():
     with PYP_FILE.open("rb") as f:
