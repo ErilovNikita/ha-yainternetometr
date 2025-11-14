@@ -28,7 +28,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "hacs-cli==0.4.3",
-    "homeassistant==2025.10.4"
+    "homeassistant==2025.10.4",
+    "jinja2==3.1.6"
 ]
 
 [project.urls]
@@ -60,7 +61,7 @@ skip = ["__init__.py"]
 [tool.hacs]
 name = "Yandex Internetometr"
 domain = "yainternetometr"
-codeowners = "@minitwiks"
+codeowner = "@minitwiks"
 country = "RU"
 config_flow = true
 homeassistant = "2025.11.0"

@@ -1,0 +1,15 @@
+{
+    "domain": "{{ domain }}",
+    "name": "{{ name }}",
+    "codeowners": ["{{ codeowner }}"],
+    "config_flow": {{ config_flow | lower }},
+    "documentation": "{{ documentation }}",
+    "iot_class": "cloud_polling",
+    "issue_tracker": "{{ issue_tracker }}",
+    "requirements": [
+        {% for req in requirements %}
+        "{{ req }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ],
+    "version": "v{{ version }}"
+}

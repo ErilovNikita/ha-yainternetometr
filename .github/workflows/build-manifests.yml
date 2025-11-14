@@ -1,0 +1,47 @@
+name: Build Home Assistant Manifests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "pyproject.toml"
+      - "scripts/**"
+      - "templates/**"
+  workflow_dispatch: {}
+
+jobs:
+  build-manifests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install generator deps
+        run: |
+          pip install jinja2 tomli tomli-w   # если будешь писать обратно
+          pip install -r requirements.txt || true
+
+      - name: Generate manifests
+        run: |
+          python scripts/generate_manifest.py
+
+      - name: Commit updated manifests
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            git add custom_components/**/manifest.json
+            git commit -m "CI: auto-regenerate HA manifests"
+            git push
+          else
+            echo "No changes in manifest.json files — skipping commit"
+          fi
