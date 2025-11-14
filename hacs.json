@@ -1,0 +1,7 @@
+{
+    "name": "Yandex Internetometr",
+    "homeassistant": "2025.10.0",
+    "render_readme": true,
+    "zip_release": false,
+    "country": ["RU"]
+}

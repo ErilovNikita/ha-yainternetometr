@@ -54,7 +54,7 @@ known_first_party = ["custom_components.yainternetometr"]
 skip = ["__init__.py"]
 
 [tool.hacs]
-name = "YaInternetometr"
+name = "Yandex Internetometr"
 domain = "yainternetometr"
 country = "RU"
 homeassistant = "2025.10.0"
