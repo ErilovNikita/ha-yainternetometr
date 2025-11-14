@@ -21,9 +21,9 @@ async def async_setup_entry(
 
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     sensors = [
-        YaInternetometrSensor(coordinator, SENSOR_PING, "Ping", "ms", "mdi:cloud-refresh-variant"),
-        YaInternetometrSensor(coordinator, SENSOR_DOWNLOAD, "Download", "Mbps", "mdi:cloud-download"),
-        YaInternetometrSensor(coordinator, SENSOR_UPLOAD, "Upload", "Mbps", "mdi:cloud-upload"),
+        YaInternetometrSensor(coordinator, SENSOR_PING, "Ping", None, "ms", "mdi:cloud-refresh-variant"),
+        YaInternetometrSensor(coordinator, SENSOR_DOWNLOAD, "Download", "data_rate", "Mbit/s", "mdi:cloud-download"),
+        YaInternetometrSensor(coordinator, SENSOR_UPLOAD, "Upload", "data_rate", "Mbit/s", "mdi:cloud-upload"),
     ]
 
     async_add_entities(sensors, update_before_add=True)
@@ -32,14 +32,18 @@ async def async_setup_entry(
 
 class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
 
-    def __init__(self, coordinator, sensor_type: str, name: str, unit: str, icon: str):
+    def __init__(self, coordinator, sensor_type: str, name: str, device_call: str|None, unit: str, icon: str):
         super().__init__(coordinator)
 
         self.sensor_type = sensor_type
         self._attr_name = name
+        self._attr_state_class = "measurement"
         self._attr_native_unit_of_measurement = unit
         self._attr_icon = icon
         self._attr_unique_id = f"{DOMAIN}_{sensor_type}"
+
+        if device_call:
+            self._attr_device_class = device_call
 
         self._attr_device_info = {
             "identifiers": {(DOMAIN, "internet_test")},
