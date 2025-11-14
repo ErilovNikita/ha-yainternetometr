@@ -22,7 +22,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "yaspeedtest==0.1.3",
+    "yaspeedtest==0.1.4",
     "hacs-cli==0.4.3",
     "homeassistant==2025.10.4"
 ]
