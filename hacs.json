@@ -1,6 +1,6 @@
 {
   "name": "ha-yainternetometr",
-  "homeassistant": "2025.11.0",
+  "homeassistant": "2025.10.0",
   "render_readme": true,
   "zip_release": false,
   "country": [
