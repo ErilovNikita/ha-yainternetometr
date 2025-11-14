@@ -27,8 +27,7 @@ jobs:
 
       - name: Install generator deps
         run: |
-          pip install jinja2 tomli tomli-w   # если будешь писать обратно
-          pip install -r requirements.txt || true
+          pip install jinja2 tomli tomli-w
 
       - name: Generate manifests
         run: |

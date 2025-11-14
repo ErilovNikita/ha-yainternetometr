@@ -5,33 +5,32 @@ from jinja2 import Template
 
 ROOT = Path.cwd()
 PYP_FILE = ROOT / "pyproject.toml"
+TEMPLATE_FILE = ROOT / "templates/hacs.json.j2"
+INTEGRATION_PATH = ROOT / "custom_components/yainternetometr"
+OUTPUT_FILE = INTEGRATION_PATH / "hacs.json"
 
 def main():
     with PYP_FILE.open("rb") as f:
         conf = tomllib.load(f)
 
     project = conf["project"]
-    ha = conf.get("tool", {}).get("hacs", {})
-    domain = ha["domain"]
+    hacs = conf.get("tool", {}).get("hacs", {})
 
-    template_file = ROOT / "templates" / "hacs.json.j2"
-    output_file = ROOT / "hacs.json"
-
-    with template_file.open("r", encoding="utf-8") as f:
+    with TEMPLATE_FILE.open("r", encoding="utf-8") as f:
         template = Template(f.read())
 
     manifest = template.render(
         name = project["name"],
-        homeassistant = ha.get("homeassistant", {}),
-        country = ha.get("country", {})
+        homeassistant = hacs.get("homeassistant", {}),
+        country = hacs.get("country", {})
     )
 
     manifest_json = json.loads(manifest)
 
-    with output_file.open("w", encoding="utf-8") as f:
+    with OUTPUT_FILE.open("w", encoding="utf-8") as f:
         json.dump(manifest_json, f, indent=2, ensure_ascii=False)
 
-    print(f"✔ Generated hacs.json for {domain} (v{project['version']})")
+    print(f"✔ Generated hacs.json for {hacs['domain']} (v{project['version']})")
 
 
 if __name__ == "__main__":
