@@ -32,7 +32,8 @@ jobs:
 
       - name: Generate manifests
         run: |
-          python scripts/generate_manifest.py
+          python scripts/build_manifest.py
+          python scripts/build_hacs.py
 
       - name: Commit updated manifests
         run: |
@@ -40,7 +41,8 @@ jobs:
             git config user.name "GitHub Actions"
             git config user.email "actions@github.com"
             git add custom_components/**/manifest.json
-            git commit -m "CI: auto-regenerate HA manifests"
+            git add hacs.json
+            git commit -m "CI: auto-regenerate manifests"
             git push
           else
             echo "No changes in manifest.json files — skipping commit"
