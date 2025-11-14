@@ -60,6 +60,7 @@ skip = ["__init__.py"]
 
 [tool.hacs]
 name = "Yandex Internetometr"
+russian_name = "Яндекс Интернетометр"
 domain = "yainternetometr"
 codeowner = "@minitwiks"
 country = "RU"
