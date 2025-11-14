@@ -205,7 +205,3 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-
-# Auto-generate configs
-hacs.json
-custom_components/yainternetometr/manifest.json
