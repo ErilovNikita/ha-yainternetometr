@@ -3,7 +3,7 @@ import tomllib
 from pathlib import Path
 from jinja2 import Template
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path.cwd()
 PYP_FILE = ROOT / "pyproject.toml"
 
 def main():
