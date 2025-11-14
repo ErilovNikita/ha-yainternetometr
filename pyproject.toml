@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ha-yainternetometr"
-version = "0.1.0"
+version = "0.1.1"
 description = "Integration for Home Assistant for measuring internet speed based on Yandex Internetometer."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,7 +22,11 @@ classifiers = [
 ]
 
 dependencies = [
-    "yaspeedtest==0.1.4",
+    "yaspeedtest==0.1.4"
+]
+
+[project.optional-dependencies]
+dev = [
     "hacs-cli==0.4.3",
     "homeassistant==2025.10.4"
 ]
@@ -56,6 +60,8 @@ skip = ["__init__.py"]
 [tool.hacs]
 name = "Yandex Internetometr"
 domain = "yainternetometr"
+codeowners = "@minitwiks"
 country = "RU"
-homeassistant = "2025.10.0"
+config_flow = true
+homeassistant = "2025.11.0"
 persistent_directory = "custom_components/yainternetometr"
