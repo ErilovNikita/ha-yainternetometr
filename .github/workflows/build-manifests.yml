@@ -45,7 +45,10 @@ jobs:
             git add -f custom_components/yainternetometr/manifest.json || true
             git add -f hacs.json
             git commit -m "CI: auto-regenerate manifests"
-            git push
+            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+            git push origin HEAD:main
           else
             echo "No changes detected — skipping commit"
           fi
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
