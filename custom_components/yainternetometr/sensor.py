@@ -21,9 +21,9 @@ async def async_setup_entry(
 
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     sensors = [
-        YaInternetometrSensor(coordinator, SENSOR_PING, "Ping", "ms", "mdi:timer"),
-        YaInternetometrSensor(coordinator, SENSOR_DOWNLOAD, "Download", "Mbps", "mdi:download"),
-        YaInternetometrSensor(coordinator, SENSOR_UPLOAD, "Upload", "Mbps", "mdi:upload"),
+        YaInternetometrSensor(coordinator, SENSOR_PING, "Ping", "ms", "mdi:cloud-refresh-variant"),
+        YaInternetometrSensor(coordinator, SENSOR_DOWNLOAD, "Download", "Mbps", "mdi:cloud-download"),
+        YaInternetometrSensor(coordinator, SENSOR_UPLOAD, "Upload", "Mbps", "mdi:cloud-upload"),
     ]
 
     async_add_entities(sensors, update_before_add=True)
