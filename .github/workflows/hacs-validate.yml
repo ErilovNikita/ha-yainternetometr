@@ -1,0 +1,25 @@
+name: 📋 HACS Validate
+
+on:
+  workflow_run:
+    workflows: ["🏗️ Build Home Assistant Manifests"]
+    types:
+      - completed
+
+jobs:
+  hassfest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration

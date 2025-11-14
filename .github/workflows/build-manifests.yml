@@ -1,6 +1,7 @@
 name: 🏗️ Build Home Assistant Manifests
 
 on:
+  pull_request:
   push:
     branches:
       - main
@@ -8,7 +9,6 @@ on:
       - "pyproject.toml"
       - "scripts/**"
       - "templates/**"
-  workflow_dispatch: {}
 
 jobs:
   build-manifests:
