@@ -46,7 +46,7 @@ jobs:
             git add -f custom_components/yainternetometr/manifest.json || true
             git add -f hacs.json
             git commit -m "CI: auto-regenerate manifests"
-            git push origin HEAD:main
+            git push
           else
             echo "No changes detected — skipping commit"
           fi
