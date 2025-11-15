@@ -27,7 +27,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "yaspeedtest==0.1.4"
+    "yaspeedtest==0.1.5"
 ]
 
 [project.optional-dependencies]
