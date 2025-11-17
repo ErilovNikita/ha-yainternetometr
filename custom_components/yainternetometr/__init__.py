@@ -1,6 +1,7 @@
 # custom_components/yainternetometr/__init__.py
 
 from __future__ import annotations
+import asyncio
 import logging
 from datetime import timedelta
 
@@ -131,11 +132,7 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
             "upload": <float>, # upload speed in Mbps
         }
         ```
-
-        Exceptions:
-            `UpdateFailed`: If an error occurs while receiving data, the method throws an UpdateFailed exception so Home Assistant handles the update error gracefully.
         """
-
         try:
             ya = await YaSpeedTest().create()
             result = await ya.run()
@@ -148,5 +145,11 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
                 SENSOR_DOWNLOAD: result.download_mbps,
                 SENSOR_UPLOAD: result.upload_mbps,
             }
+
+        except asyncio.CancelledError:
+            _LOGGER.warning("Yandex Speedtest measurement was cancelled — skipping update")
+            return None
+
         except Exception as err:
-            raise UpdateFailed(f"Error fetch data: {err}") from err
+            _LOGGER.error("Error during Yandex Speedtest update: %s", err)
+            raise UpdateFailed(f"Error fetching data: {err}") from err
