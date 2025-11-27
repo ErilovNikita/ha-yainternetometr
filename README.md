@@ -29,8 +29,10 @@
 > [!TIP]  
 > Рекомендуемый способ установки
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ErilovNikita&repository=ha-yainternetometr&category=integration)
+
 1. Через интерфейс HACS найдите `YaInternetometr`
-1. Установите интеграцию
+2. Установите интеграцию
 
 ### Вручную
 Клонируйте репозиторий во временный каталог, затем переместите по пути `custom_components/yainternetometr`
