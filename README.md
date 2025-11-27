@@ -34,7 +34,7 @@
 
 ### Вручную
 Клонируйте репозиторий во временный каталог, затем переместите по пути `custom_components/yainternetometr`
-``` sh
+``` bash
 git clone https://github.com/ErilovNikita/ha-yainternetometr.git
 mkdir -p /mnt/homeassistant/config/custom_components
 mv ha-yainternetometr/custom_components/yainternetometr /config/custom_components/
