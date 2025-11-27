@@ -3,7 +3,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Latest Release](https://img.shields.io/github/v/release/ErilovNikita/ha-yainternetometr?label=Latest%20Release)](https://github.com/ErilovNikita/ha-yainternetometr/releases/latest)
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/default)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-green.svg)](https://github.com/hacs/default)
 [![HACS Validate](https://github.com/ErilovNikita/ha-yainternetometr/actions/workflows/hacs-validate.yml/badge.svg?branch=main)](https://github.com/ErilovNikita/ha-yainternetometr/actions/workflows/hacs-validate.yml)
 
 <p align="center" float="center" width="100%">
@@ -26,15 +26,17 @@
 
 ## Установка
 ### Автоматически
-> [!WARNING]  
-> Временно не поддерживается
+> [!TIP]  
+> Рекомендуемый способ установки
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ErilovNikita&repository=ha-yainternetometr&category=integration)
 
 1. Через интерфейс HACS найдите `YaInternetometr`
-1. Установите интеграцию
+2. Установите интеграцию
 
 ### Вручную
 Клонируйте репозиторий во временный каталог, затем переместите по пути `custom_components/yainternetometr`
-``` sh
+``` bash
 git clone https://github.com/ErilovNikita/ha-yainternetometr.git
 mkdir -p /mnt/homeassistant/config/custom_components
 mv ha-yainternetometr/custom_components/yainternetometr /config/custom_components/
