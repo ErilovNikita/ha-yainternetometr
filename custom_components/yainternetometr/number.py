@@ -43,16 +43,16 @@ class YaInternetometrNumber(NumberEntity):
         }
 
     async def async_set_native_value(self, value: float) -> None:
-        seconds = int(value)
+        minutes = int(value)
 
-        self._attr_native_value = seconds
-        self.coordinator.update_interval = timedelta(seconds=seconds)
+        self._attr_native_value = minutes
+        self.coordinator.update_interval = timedelta(minutes=minutes)
 
         self.hass.config_entries.async_update_entry(
             self.entry,
             options={
                 **self.entry.options, 
-                CONF_UPDATE_INTERVAL: seconds
+                CONF_UPDATE_INTERVAL: minutes
             },
         )
 

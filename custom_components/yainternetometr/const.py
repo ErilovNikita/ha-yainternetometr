@@ -12,7 +12,7 @@ DEVICE_MODEL = "Internetometr"
 DEVICE_NAME = "YaInternetometr"
 DEVICE_IDENTIFIER = "internet_test"
 
-DEFAULT_SCAN_INTERVAL = timedelta(seconds=1800) # 30 minutes
-MIN_SCAN_INTERVAL = 60 # 1 minute
-MAX_SCAN_INTERVAL = 3600 # 1 hour
-STEP_SCAN_INTERVAL = 30 # 30 seconds
+DEFAULT_SCAN_INTERVAL = timedelta(minutes=30) # 30 minutes
+MIN_SCAN_INTERVAL = 0 # 0 minute
+MAX_SCAN_INTERVAL = 60 # 1 hour
+STEP_SCAN_INTERVAL = 5 # 5 minutes
