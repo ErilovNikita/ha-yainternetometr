@@ -9,7 +9,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD
+from .const import DOMAIN, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD, DEVICE_MANUFACTURER, DEVICE_MODEL, DEVICE_NAME, DEVICE_IDENTIFIER
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -105,10 +105,10 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
 
         # General information about "Device" for combining all sensors
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, "internet_test")},
-            "name": "YaInternetometr",
-            "manufacturer": "Yandex",
-            "model": "Internetometr",
+            "identifiers": {(DOMAIN, DEVICE_IDENTIFIER)},
+            "name": DEVICE_NAME,
+            "manufacturer": DEVICE_MANUFACTURER,
+            "model": DEVICE_MODEL,
         }
 
     @property
