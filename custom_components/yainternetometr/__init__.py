@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import asyncio
+from datetime import timedelta
 import logging
 
 from homeassistant.core import HomeAssistant
@@ -108,14 +109,16 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
             `hass` (HomeAssistant): The main Home Assistant object through which interaction with the platform occurs.
         """
 
+        scan_interval_minutes:int = entry.options.get(
+            CONF_UPDATE_INTERVAL,
+            DEFAULT_SCAN_INTERVAL,
+        )
+
         super().__init__(
             hass,
             _LOGGER,
             name="YaInternetometr Data Coordinator",
-            update_interval=entry.options.get(
-                CONF_UPDATE_INTERVAL,
-                DEFAULT_SCAN_INTERVAL,
-            )
+            update_interval=timedelta(minutes=scan_interval_minutes)
         )
 
     async def _async_update_data(self) -> dict[str, float]:
