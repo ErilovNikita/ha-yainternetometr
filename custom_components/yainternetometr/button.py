@@ -28,7 +28,7 @@ async def async_setup_entry(
         - hass (HomeAssistant): The main Home Assistant object, providing access to data, services, and other platform components.
         - entry (ConfigEntry): The configuration entry for the current integration. Contains a
         - unique identifier, configuration data, and integration state.
-        - async_add_entities (AddEntitiesCallback): A callback function used to create and add entities (sensors) to Home Assistant.
+        - async_add_entities (AddEntitiesCallback): A callback function used to create and add entities (buttons) to Home Assistant.
 
     Returns:
         None
@@ -58,10 +58,10 @@ class YaInternetometrButton(ButtonEntity):
         `_attr_name` (str): The button's display name in the HA interface.
         `_attr_icon` (str): button icon for the UI (Material Design Icons).
         `_attr_unique_id` (str): unique button identifier within the integration.
-        `_attr_device_info` (dict): information about the device to which the sensors are linked. Combines all sensors into a single logical device, "YaInternetometr".
+        `_attr_device_info` (dict): information about the device to which the buttons are linked. Combines all buttons into a single logical device, "YaInternetometr".
 
     Methods:
-        `__init__`: initializes the sensor, assigns attributes, and links it to the data update coordinator.
+        `__init__`: initializes the button, assigns attributes, and links it to the data update coordinator.
     """
 
     def __init__(
@@ -81,7 +81,7 @@ class YaInternetometrButton(ButtonEntity):
         self._attr_icon = icon
         self._press_action = press_action
 
-        # General information about "Device" for combining all sensors
+        # General information about "Device" for combining all buttons
         self._attr_device_info = {
             "identifiers": {(DOMAIN, DEVICE_IDENTIFIER)},
             "name": DEVICE_NAME,
