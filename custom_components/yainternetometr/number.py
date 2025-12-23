@@ -5,6 +5,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN, CONF_UPDATE_INTERVAL, DEFAULT_SCAN_INTERVAL, MAX_SCAN_INTERVAL, MIN_SCAN_INTERVAL, STEP_SCAN_INTERVAL, DEVICE_MANUFACTURER, DEVICE_MODEL, DEVICE_NAME, DEVICE_IDENTIFIER
 
@@ -15,7 +16,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         YaInternetometrNumber(hass, entry, coordinator)
     ])
 
-class YaInternetometrNumber(NumberEntity):
+class YaInternetometrNumber(NumberEntity, RestoreEntity):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, coordinator: DataUpdateCoordinator):
         """Initializing the YaInternetometr number."""
 
