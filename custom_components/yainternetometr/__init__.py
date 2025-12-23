@@ -109,16 +109,21 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
             `hass` (HomeAssistant): The main Home Assistant object through which interaction with the platform occurs.
         """
 
-        scan_interval_minutes:int = entry.options.get(
+        scan_interval:any = entry.options.get(
             CONF_UPDATE_INTERVAL,
             DEFAULT_SCAN_INTERVAL,
         )
+
+        if isinstance(scan_interval, timedelta):
+            update_interval:timedelta = scan_interval
+        else:
+            update_interval:timedelta = timedelta(minutes=scan_interval)
 
         super().__init__(
             hass,
             _LOGGER,
             name="YaInternetometr Data Coordinator",
-            update_interval=timedelta(minutes=scan_interval_minutes)
+            update_interval=update_interval
         )
 
     async def _async_update_data(self) -> dict[str, float]:
