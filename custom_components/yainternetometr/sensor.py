@@ -27,28 +27,27 @@ async def async_setup_entry(
     and registering them in the system.
 
     Parameters:
-    hass (HomeAssistant): The main Home Assistant object, providing access
-    to data, services, and other platform components.
-    entry (ConfigEntry): The configuration entry for the current integration. Contains a
-    unique identifier, configuration data, and integration state.
-    async_add_entities (AddEntitiesCallback): A callback function used to create and add entities (sensors) to Home Assistant.
+        - hass (HomeAssistant): The main Home Assistant object, providing access to data, services, and other platform components.
+        - entry (ConfigEntry): The configuration entry for the current integration. Contains a
+        - unique identifier, configuration data, and integration state.
+        - async_add_entities (AddEntitiesCallback): A callback function used to create and add entities (sensors) to Home Assistant.
 
     Method actions:
-    1. Gets the data update coordinator from hass.data for the current entry.
-    2. Creates three sensors:
-    - Ping: Network response time in milliseconds.
-    - Download: Download speed in Mbps.
-    - Upload: upload speed in Mbit/s.
-    3. Each sensor is assigned:
-    - name,
-    - data type for state_class and device_class,
-    - units of measurement,
-    - icon for display in the interface.
-    4. Registers sensors via `async_add_entities`, ensuring that values ​​are updated before the first display (`update_before_add=True`).
-    5. Logs the number of created sensors for debugging.
+        - Gets the data update coordinator from hass.data for the current entry.
+        - Creates three sensors:
+            - Ping: Network response time in milliseconds.
+            - Download: Download speed in Mbps.
+            - Upload: upload speed in Mbit/s.
+        - Each sensor is assigned:
+            - name,
+            - data type for state_class and device_class,
+            - units of measurement,
+            - icon for display in the interface.
+        - Registers sensors via `async_add_entities`, ensuring that values ​​are updated before the first display (`update_before_add=True`).
+        - Logs the number of created sensors for debugging.
 
     Returns:
-    None
+        None
     """
 
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
@@ -68,8 +67,7 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
     DataUpdateCoordinator and displays it in Home Assistant.
 
     The class inherits:
-        - CoordinatorEntity: Provides automatic updating
-        of sensor values ​​when coordinator data changes.
+        - CoordinatorEntity: Provides automatic updating of sensor values ​​when coordinator data changes.
         - SensorEntity: Standard sensor interface in Home Assistant.
 
     Attributes:
@@ -88,7 +86,15 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
         `native_value` (property): returns the current metric value from coordinator.data. Rounding and processing can be added here.
     """
 
-    def __init__(self, coordinator: DataUpdateCoordinator, sensor_type: str, name: str, device_call: str|None, unit: str, icon: str):
+    def __init__(
+            self, 
+            coordinator: DataUpdateCoordinator, 
+            sensor_type: str, 
+            name: str, 
+            device_call: str|None, 
+            unit: str, 
+            icon: str
+    ):
         """Initializing the YaInternetometr sensor."""
         super().__init__(coordinator)
 
