@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 import asyncio
-import logging
 from datetime import timedelta
+import logging
 
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN, SCAN_INTERVAL, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD
+from .const import DOMAIN, CONF_UPDATE_INTERVAL, DEFAULT_SCAN_INTERVAL, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD
 from yaspeedtest.client import YaSpeedTest
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,14 +41,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         bool: True if integration setup was successful, False if an error occurred.
     """
 
-    coordinator = YaInternetometrDataUpdateCoordinator(hass)
+    coordinator = YaInternetometrDataUpdateCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {"coordinator": coordinator}
 
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
-
+    await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "number", "button"])
     return True
 
 
@@ -102,7 +101,7 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
         `_async_update_data`: An asynchronous method that Home Assistant calls to obtain new data with each update.
     """
 
-    def __init__(self, hass: HomeAssistant) -> None:
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """
         Coordinator initialization.
 
@@ -110,11 +109,21 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
             `hass` (HomeAssistant): The main Home Assistant object through which interaction with the platform occurs.
         """
 
+        scan_interval:any = entry.options.get(
+            CONF_UPDATE_INTERVAL,
+            DEFAULT_SCAN_INTERVAL,
+        )
+
+        if isinstance(scan_interval, timedelta):
+            update_interval:timedelta = scan_interval
+        else:
+            update_interval:timedelta = timedelta(minutes=scan_interval)
+
         super().__init__(
             hass,
             _LOGGER,
             name="YaInternetometr Data Coordinator",
-            update_interval=timedelta(seconds=SCAN_INTERVAL),
+            update_interval=update_interval
         )
 
     async def _async_update_data(self) -> dict[str, float]:
