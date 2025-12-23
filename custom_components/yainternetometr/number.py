@@ -58,3 +58,15 @@ class YaInternetometrNumber(NumberEntity):
         )
 
         await self.coordinator.async_request_refresh()
+    
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+
+        if (state := await self.async_get_last_state()):
+            try:
+                value = int(state.state)
+            except ValueError:
+                return
+
+            self._attr_native_value = value
+            self.coordinator.update_interval = timedelta(minutes=value)
