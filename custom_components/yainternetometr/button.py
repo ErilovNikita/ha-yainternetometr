@@ -40,7 +40,7 @@ async def async_setup_entry(
         await coordinator.async_request_refresh()
 
     buttons = [
-        YaInternetometrButton(hass, coordinator, "update_speedtest", "Update speedtest", "mdi:refresh", refresh_data)
+        YaInternetometrButton(coordinator, "update_speedtest", "Update speedtest", "mdi:refresh", refresh_data)
     ]
 
     async_add_entities(buttons, update_before_add=True)
