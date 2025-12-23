@@ -1,7 +1,17 @@
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.components.button import ButtonEntity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import DOMAIN, DEVICE_MANUFACTURER, DEVICE_MODEL, DEVICE_NAME, DEVICE_IDENTIFIER
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
+    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+
+    async_add_entities([
+        YaInternetometrUpdateButton(hass, entry, coordinator)
+    ])
 
 class YaInternetometrUpdateButton(ButtonEntity):
     """Button to trigger an immediate speed test update."""
