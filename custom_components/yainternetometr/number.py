@@ -3,10 +3,11 @@ from homeassistant.components.number import NumberEntity
 from homeassistant.const import UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, CONF_UPDATE_INTERVAL, DEFAULT_SCAN_INTERVAL, MAX_SCAN_INTERVAL, MIN_SCAN_INTERVAL, STEP_SCAN_INTERVAL, DEVICE_MANUFACTURER, DEVICE_MODEL, DEVICE_NAME, DEVICE_IDENTIFIER
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
     async_add_entities([
@@ -42,13 +43,17 @@ class YaInternetometrNumber(NumberEntity):
         }
 
     async def async_set_native_value(self, value: float) -> None:
-        value = int(value)
+        seconds = int(value)
 
-        self._attr_native_value = value
+        self._attr_native_value = seconds
+        self.coordinator.update_interval = timedelta(seconds=seconds)
 
         self.hass.config_entries.async_update_entry(
             self.entry,
-            options={**self.entry.options, CONF_UPDATE_INTERVAL: value},
+            options={
+                **self.entry.options, 
+                CONF_UPDATE_INTERVAL: seconds
+            },
         )
 
-        self.coordinator.update_interval = timedelta(seconds=value)
+        await self.coordinator.async_request_refresh()
