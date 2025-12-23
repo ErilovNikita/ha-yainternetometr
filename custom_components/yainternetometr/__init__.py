@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN, SCAN_INTERVAL, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD
+from .const import DOMAIN, DEFAULT_SCAN_INTERVAL, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD
 from yaspeedtest.client import YaSpeedTest
 
 _LOGGER = logging.getLogger(__name__)
@@ -47,8 +47,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {"coordinator": coordinator}
 
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
-
+    await hass.config_entries.async_forward_entry_setups(
+        entry, 
+        ["sensor", "number"]
+    )
     return True
 
 
@@ -114,7 +116,7 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name="YaInternetometr Data Coordinator",
-            update_interval=timedelta(seconds=SCAN_INTERVAL),
+            update_interval=DEFAULT_SCAN_INTERVAL
         )
 
     async def _async_update_data(self) -> dict[str, float]:
