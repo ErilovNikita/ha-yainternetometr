@@ -7,6 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD, DEVICE_MANUFACTURER, DEVICE_MODEL, DEVICE_NAME, DEVICE_IDENTIFIER
@@ -87,7 +88,7 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
         `native_value` (property): returns the current metric value from coordinator.data. Rounding and processing can be added here.
     """
 
-    def __init__(self, coordinator, sensor_type: str, name: str, device_call: str|None, unit: str, icon: str):
+    def __init__(self, coordinator: DataUpdateCoordinator, sensor_type: str, name: str, device_call: str|None, unit: str, icon: str):
         """Initializing the YaInternetometr sensor."""
         super().__init__(coordinator)
 

@@ -4,23 +4,24 @@ from homeassistant.const import UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import DOMAIN, CONF_UPDATE_INTERVAL, DEFAULT_SCAN_INTERVAL, MAX_SCAN_INTERVAL, MIN_SCAN_INTERVAL, STEP_SCAN_INTERVAL, DEVICE_MANUFACTURER, DEVICE_MODEL, DEVICE_NAME, DEVICE_IDENTIFIER
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
 
     async_add_entities([
         YaInternetometrNumber(hass, entry, coordinator)
     ])
 
 class YaInternetometrNumber(NumberEntity):
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, coordinator):
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, coordinator: DataUpdateCoordinator):
         """Initializing the YaInternetometr number."""
 
         # Metrics
         self._attr_name = "Update interval"
-        self._attr_native_unit_of_measurement = UnitOfTime.SECONDS
+        self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
         self._attr_native_min_value = MIN_SCAN_INTERVAL
         self._attr_native_max_value = MAX_SCAN_INTERVAL
         self._attr_native_step = STEP_SCAN_INTERVAL
