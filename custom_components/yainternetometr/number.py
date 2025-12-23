@@ -48,7 +48,11 @@ class YaInternetometrNumber(NumberEntity, RestoreEntity):
         minutes = int(value)
 
         self._attr_native_value = minutes
-        self.coordinator.update_interval = timedelta(minutes=minutes)
+
+        if minutes == 0:
+            self.coordinator.update_interval = None
+        else:
+            self.coordinator.update_interval = timedelta(minutes=minutes)
 
         self.hass.config_entries.async_update_entry(
             self.entry,
