@@ -1,4 +1,7 @@
+"""Constants for Yandex Internetometr."""
+
 DOMAIN = "yainternetometr"
+DEFAULT_NAME = "Яндекс Интернетометр"
 
 SENSOR_PING = "ping"
 SENSOR_DOWNLOAD = "download"
