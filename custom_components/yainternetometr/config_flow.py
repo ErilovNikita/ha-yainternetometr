@@ -1,4 +1,6 @@
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+
+import voluptuous
 from typing import Any
 from .const import DOMAIN, DEFAULT_NAME
 
@@ -26,4 +28,4 @@ class YaInternetometrConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             return self.async_create_entry(title=DEFAULT_NAME, data={})
 
-        return self.async_show_form(step_id="user")
+        return self.async_show_form(step_id="user", data_schema=voluptuous.Schema({}))
