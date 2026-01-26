@@ -136,7 +136,6 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
             update_interval=update_interval
         )
         self._update_lock = asyncio.Lock()
-        self._last_data: dict[str, float] | None = None
 
     async def _async_update_data(self) -> dict[str, float]:
         """
@@ -155,9 +154,9 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
         ```
         """
 
-        if self._update_lock.locked() and self._last_data is not None:
+        if self._update_lock.locked() and self.data is not None:
             _LOGGER.debug("Speedtest already running — skipping update")
-            return self._last_data
+            return self.data
     
         async with self._update_lock:
             try:
@@ -173,7 +172,7 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
                         SENSOR_DOWNLOAD: result.download_mbps,
                         SENSOR_UPLOAD: result.upload_mbps,
                     }
-                    self._last_data = data
+                    self.async_set_updated_data(data)
                     return data
                 
             except TimeoutError as err:
