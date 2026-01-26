@@ -1,10 +1,12 @@
 
 from __future__ import annotations
 import logging
+from collections.abc import Callable, Awaitable
 
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.components.button import ButtonEntity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -43,10 +45,10 @@ async def async_setup_entry(
         YaInternetometrButton(coordinator, "update_speedtest", "Update speedtest", "mdi:refresh", refresh_data)
     ]
 
-    async_add_entities(buttons, update_before_add=True)
+    async_add_entities(buttons)
     _LOGGER.debug("Created %d buttons YaInternetometr", len(buttons))
 
-class YaInternetometrButton(ButtonEntity):
+class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
     """
     YaInternetometr integration button it in Home Assistant.
 
@@ -70,15 +72,15 @@ class YaInternetometrButton(ButtonEntity):
             unique_id: str, 
             name: str, 
             icon: str,
-            press_action: callable,
+            press_action: Callable[[], Awaitable[None]],
     ):
         """Initializing the YaInternetometr button."""
 
         # Metrics
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self._attr_name = name
         self._attr_unique_id = f"{DOMAIN}_button_{unique_id}"
-        self._attr_icon = icon
+        self._default_icon = icon
         self._press_action = press_action
 
         # General information about "Device" for combining all buttons
@@ -93,3 +95,25 @@ class YaInternetometrButton(ButtonEntity):
         """Handle the button press."""
         if callable(self._press_action):
             await self._press_action()
+            self.async_write_ha_state()
+
+    @property
+    def available(self) -> bool:
+        lock = getattr(self.coordinator, "_update_lock", None)
+        if lock is None: 
+            return True
+        return not lock.locked()
+    
+    @property
+    def extra_state_attributes(self) -> dict[str, bool]:
+        lock = getattr(self.coordinator, "_update_lock", None)
+        return {
+            "in_progress": lock.locked() if lock else False
+        }
+    
+    @property
+    def icon(self) -> str:
+        lock = getattr(self.coordinator, "_update_lock", None)
+        if lock and lock.locked():
+            return "mdi:progress-clock"
+        return self._default_icon

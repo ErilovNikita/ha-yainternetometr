@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import asyncio
+from asyncio import timeout
 from datetime import timedelta
 import logging
 
@@ -41,8 +42,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         bool: True if integration setup was successful, False if an error occurred.
     """
 
-    coordinator = YaInternetometrDataUpdateCoordinator(hass, entry)
-    await coordinator.async_config_entry_first_refresh()
+    scan_interval:any = entry.options.get(
+        CONF_UPDATE_INTERVAL,
+        DEFAULT_SCAN_INTERVAL,
+    )
+
+    update_interval = (
+        timedelta(minutes=scan_interval)
+        if scan_interval > 0 else None
+    )
+
+    coordinator = YaInternetometrDataUpdateCoordinator(hass, entry, update_interval)
+
+    if update_interval is not None:
+        hass.async_create_task(
+            coordinator.async_config_entry_first_refresh()
+        )
+    else:
+        _LOGGER.info(
+            "YaInternetometr started with update interval = 0, "
+            "automatic updates disabled"
+        )
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {"coordinator": coordinator}
@@ -73,7 +93,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         `bool`: True if the platforms were successfully unloaded and the data cleared. False if the upload failed.
     """
 
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor"])
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor", "number", "button"])
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
     return unload_ok
@@ -101,7 +121,7 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
         `_async_update_data`: An asynchronous method that Home Assistant calls to obtain new data with each update.
     """
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, update_interval: timedelta | None) -> None:
         """
         Coordinator initialization.
 
@@ -109,22 +129,13 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
             `hass` (HomeAssistant): The main Home Assistant object through which interaction with the platform occurs.
         """
 
-        scan_interval:any = entry.options.get(
-            CONF_UPDATE_INTERVAL,
-            DEFAULT_SCAN_INTERVAL,
-        )
-
-        if isinstance(scan_interval, timedelta):
-            update_interval:timedelta = scan_interval
-        else:
-            update_interval:timedelta = timedelta(minutes=scan_interval)
-
         super().__init__(
             hass,
             _LOGGER,
             name="YaInternetometr Data Coordinator",
             update_interval=update_interval
         )
+        self._update_lock = asyncio.Lock()
 
     async def _async_update_data(self) -> dict[str, float]:
         """
@@ -142,23 +153,33 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
         }
         ```
         """
-        try:
-            ya = await YaSpeedTest().create()
-            result = await ya.run()
-            _LOGGER.debug(
-                "SpeedTest results: ping=%.2f ms, download=%.2f Mbps, upload=%.2f Mbps",
-                result.ping_ms, result.download_mbps, result.upload_mbps
-            )
-            return {
-                SENSOR_PING: result.ping_ms,
-                SENSOR_DOWNLOAD: result.download_mbps,
-                SENSOR_UPLOAD: result.upload_mbps,
-            }
 
-        except asyncio.CancelledError:
-            _LOGGER.warning("Yandex Speedtest measurement was cancelled — skipping update")
-            return None
+        if self._update_lock.locked():
+            _LOGGER.debug("Speedtest already running — skipping update")
+            raise UpdateFailed("Speedtest already in progress")
+    
+        async with self._update_lock:
+            try:
+                async with timeout(180):
+                    ya = await YaSpeedTest().create()
+                    result = await ya.run()
+                    _LOGGER.debug(
+                        "SpeedTest results: ping=%.2f ms, download=%.2f Mbps, upload=%.2f Mbps",
+                        result.ping_ms, result.download_mbps, result.upload_mbps
+                    )
+                    return {
+                        SENSOR_PING: result.ping_ms,
+                        SENSOR_DOWNLOAD: result.download_mbps,
+                        SENSOR_UPLOAD: result.upload_mbps,
+                    }
+                
+            except TimeoutError as err:
+                raise UpdateFailed("Speedtest timed out") from err
 
-        except Exception as err:
-            _LOGGER.error("Error during Yandex Speedtest update: %s", err)
-            raise UpdateFailed(f"Error fetching data: {err}") from err
+            except asyncio.CancelledError:
+                _LOGGER.debug("Yandex Speedtest measurement was cancelled — skipping update")
+                raise
+
+            except Exception as err:
+                _LOGGER.error("Error during Yandex Speedtest update: %s", err)
+                raise UpdateFailed(f"Error fetching data: {err}") from err
