@@ -55,7 +55,7 @@ class YaInternetometrNumber(NumberEntity, RestoreEntity):
 
     Attributes:
         `coordinator`: A YaInternetometrDataUpdateCoordinator instance, providing up-to-date ping, download, and upload values.
-        `_attr_name` (str): The number's display name in the HA interface.
+        `_attr_translation_key` (str): The key for the display name in the Home Assistant interface.
         `_attr_icon` (str): number icon for the UI (Material Design Icons).
         `_attr_unique_id` (str): unique number identifier within the integration.
         `_attr_device_info` (dict): information about the device to which the numbers are linked. Combines all numbers into a single logical device, "YaInternetometr".
@@ -68,7 +68,8 @@ class YaInternetometrNumber(NumberEntity, RestoreEntity):
         """Initializing the YaInternetometr number."""
 
         # Metrics
-        self._attr_name = "Update interval"
+        self._attr_has_entity_name = True
+        self._attr_translation_key = CONF_UPDATE_INTERVAL
         self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
         self._attr_native_min_value = MIN_SCAN_INTERVAL
         self._attr_native_max_value = MAX_SCAN_INTERVAL

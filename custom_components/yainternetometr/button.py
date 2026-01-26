@@ -42,7 +42,7 @@ async def async_setup_entry(
         await coordinator.async_request_refresh()
 
     buttons = [
-        YaInternetometrButton(coordinator, "update_speedtest", "Update speedtest", "mdi:refresh", refresh_data)
+        YaInternetometrButton(coordinator, entry, "update_speedtest", "update_now", "mdi:refresh", refresh_data)
     ]
 
     async_add_entities(buttons)
@@ -57,7 +57,7 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
 
     Attributes:
         `coordinator`: A YaInternetometrDataUpdateCoordinator instance, providing up-to-date ping, download, and upload values.
-        `_attr_name` (str): The button's display name in the HA interface.
+        `_attr_translation_key` (str): The key for the display name in the Home Assistant interface.
         `_attr_icon` (str): button icon for the UI (Material Design Icons).
         `_attr_unique_id` (str): unique button identifier within the integration.
         `_attr_device_info` (dict): information about the device to which the buttons are linked. Combines all buttons into a single logical device, "YaInternetometr".
@@ -69,8 +69,9 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
     def __init__(
             self, 
             coordinator: DataUpdateCoordinator,
+            entry: ConfigEntry,
             unique_id: str, 
-            name: str, 
+            translation_key: str, 
             icon: str,
             press_action: Callable[[], Awaitable[None]],
     ):
@@ -78,8 +79,9 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
 
         # Metrics
         super().__init__(coordinator)
-        self._attr_name = name
-        self._attr_unique_id = f"{DOMAIN}_button_{unique_id}"
+        self._attr_has_entity_name = True
+        self._attr_translation_key = translation_key
+        self._attr_unique_id = f"{entry.entry_id}_{unique_id}"
         self._default_icon = icon
         self._press_action = press_action
         self._in_progress = False

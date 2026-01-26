@@ -8,5 +8,28 @@
         "description": "Хотите начать настройку?"
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "ping": {
+        "name": "Задержка (Ping)"
+      },
+      "download": {
+        "name": "Скорость загрузки"
+      },
+      "upload": {
+        "name": "Скорость отдачи"
+      }
+    },
+    "button": {
+      "update_now": {
+        "name": "Обновить сейчас"
+      }
+    },
+    "number": {
+      "update_interval": {
+        "name": "Интервал обновления"
+      }
+    }
   }
 }

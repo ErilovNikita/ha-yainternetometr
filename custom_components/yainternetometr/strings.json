@@ -1,4 +1,3 @@
-
 {
   "config": {
     "abort": {
@@ -7,6 +6,29 @@
     "step": {
       "user": {
         "description": "Want to start setting up?"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "ping": {
+        "name": "Ping"
+      },
+      "download": {
+        "name": "Download"
+      },
+      "upload": {
+        "name": "Upload"
+      }
+    },
+    "button": {
+      "update_now": {
+        "name": "Refresh now"
+      }
+    },
+    "number": {
+      "update_interval": {
+        "name": "Update interval"
       }
     }
   }
