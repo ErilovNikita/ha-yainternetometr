@@ -78,6 +78,7 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
 
         # Metrics
         super().__init__(coordinator)
+        self._attr_has_entity_name = True
         self._attr_translation_key = translation_key
         self._attr_unique_id = f"{DOMAIN}_button_{unique_id}"
         self._default_icon = icon

@@ -99,6 +99,7 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
 
         # Metrics
+        self._attr_has_entity_name = True
         self.sensor_type = sensor_type
         self._attr_translation_key = translation_key
         self._attr_state_class = "measurement"
