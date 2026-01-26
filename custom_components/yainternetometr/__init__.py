@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN, CONF_UPDATE_INTERVAL, DEFAULT_SCAN_INTERVAL, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD
+from .const import DOMAIN, CONF_UPDATE_INTERVAL, DEFAULT_SCAN_INTERVAL, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD, TIMEOUT_TEST
 from yaspeedtest.client import YaSpeedTest
 
 _LOGGER = logging.getLogger(__name__)
@@ -160,7 +160,7 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
     
         async with self._update_lock:
             try:
-                async with timeout(180):
+                async with timeout(TIMEOUT_TEST):
                     ya = await YaSpeedTest().create()
                     result = await ya.run()
                     _LOGGER.debug(
