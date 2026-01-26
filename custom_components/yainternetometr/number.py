@@ -68,7 +68,7 @@ class YaInternetometrNumber(NumberEntity, RestoreEntity):
         """Initializing the YaInternetometr number."""
 
         # Metrics
-        self._attr_translation_key = "update_interval"
+        self._attr_translation_key = CONF_UPDATE_INTERVAL
         self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
         self._attr_native_min_value = MIN_SCAN_INTERVAL
         self._attr_native_max_value = MAX_SCAN_INTERVAL

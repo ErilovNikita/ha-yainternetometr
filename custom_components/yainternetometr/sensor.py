@@ -10,7 +10,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, DEVICE_MANUFACTURER, DEVICE_MODEL, DEVICE_NAME, DEVICE_IDENTIFIER
+from .const import DOMAIN, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD, DEVICE_MANUFACTURER, DEVICE_MODEL, DEVICE_NAME, DEVICE_IDENTIFIER
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,9 +52,9 @@ async def async_setup_entry(
 
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     sensors = [
-        YaInternetometrSensor(coordinator, "ping", "ping", None, "ms", "mdi:cloud-refresh-variant"),
-        YaInternetometrSensor(coordinator, "download", "download", "data_rate", "Mbit/s", "mdi:cloud-download"),
-        YaInternetometrSensor(coordinator, "upload", "upload", "data_rate", "Mbit/s", "mdi:cloud-upload"),
+        YaInternetometrSensor(coordinator, SENSOR_PING, SENSOR_PING, None, "ms", "mdi:cloud-refresh-variant"),
+        YaInternetometrSensor(coordinator, SENSOR_DOWNLOAD, SENSOR_DOWNLOAD, "data_rate", "Mbit/s", "mdi:cloud-download"),
+        YaInternetometrSensor(coordinator, SENSOR_UPLOAD, SENSOR_UPLOAD, "data_rate", "Mbit/s", "mdi:cloud-upload"),
     ]
 
     async_add_entities(sensors, update_before_add=True)
