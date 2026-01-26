@@ -88,8 +88,8 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
 
     def __init__(
             self, 
-            entry: ConfigEntry,
             coordinator: DataUpdateCoordinator, 
+            entry: ConfigEntry,
             sensor_type: str, 
             translation_key: str, 
             device_call: str|None, 

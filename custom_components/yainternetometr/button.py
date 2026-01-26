@@ -68,8 +68,8 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
 
     def __init__(
             self, 
-            entry: ConfigEntry,
             coordinator: DataUpdateCoordinator,
+            entry: ConfigEntry,
             unique_id: str, 
             translation_key: str, 
             icon: str,
