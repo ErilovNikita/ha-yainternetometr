@@ -90,6 +90,7 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
         self._attr_unique_id = f"{DOMAIN}_button_{unique_id}"
         self._default_icon = icon
         self._press_action = press_action
+        self._in_progress = False
 
         # General information about "Device" for combining all buttons
         self._attr_device_info = {
@@ -99,18 +100,26 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
             "model": DEVICE_MODEL,
         }
 
-    async def async_press(self) -> None:
-        """Handle the button press."""
-        if callable(self._press_action):
+    async def async_press(self):
+        if self._in_progress:
+            return
+
+        self._in_progress = True
+        self.async_write_ha_state()
+
+        try:
             await self._press_action()
+        finally:
+            self._in_progress = False
+            self.async_write_ha_state()
 
     @property
-    def available(self) -> bool:
-        return not self.coordinator._update_lock.locked()
+    def available(self):
+        return not self._in_progress
     
     @property
-    def extra_state_attributes(self) -> dict[str, bool]:
-        return {"in_progress": self.coordinator._update_lock.locked()}
+    def extra_state_attributes(self):
+        return {"in_progress": self._in_progress}
     
     @property
     def icon(self) -> str:
