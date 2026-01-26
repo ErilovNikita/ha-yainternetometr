@@ -156,7 +156,7 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
 
         if self._update_lock.locked():
             _LOGGER.debug("Speedtest already running — skipping update")
-            raise UpdateFailed("Speedtest already in progress")
+            return self.data or {}
     
         async with self._update_lock:
             try:
