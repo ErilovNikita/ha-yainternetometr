@@ -24,9 +24,5 @@ class YaInternetometrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({}),
-            description_placeholders={
-                "info": (
-                    "Интеграция не требует настройки. "
-                )
-            }
+            description="Интеграция не требует настройки."
         )
