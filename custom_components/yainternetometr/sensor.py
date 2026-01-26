@@ -10,7 +10,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, SENSOR_PING, SENSOR_DOWNLOAD, SENSOR_UPLOAD, DEVICE_MANUFACTURER, DEVICE_MODEL, DEVICE_NAME, DEVICE_IDENTIFIER
+from .const import DOMAIN, DEVICE_MANUFACTURER, DEVICE_MODEL, DEVICE_NAME, DEVICE_IDENTIFIER
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,9 +52,9 @@ async def async_setup_entry(
 
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     sensors = [
-        YaInternetometrSensor(coordinator, SENSOR_PING, "Ping", None, "ms", "mdi:cloud-refresh-variant"),
-        YaInternetometrSensor(coordinator, SENSOR_DOWNLOAD, "Download", "data_rate", "Mbit/s", "mdi:cloud-download"),
-        YaInternetometrSensor(coordinator, SENSOR_UPLOAD, "Upload", "data_rate", "Mbit/s", "mdi:cloud-upload"),
+        YaInternetometrSensor(coordinator, "ping", "ping", None, "ms", "mdi:cloud-refresh-variant"),
+        YaInternetometrSensor(coordinator, "download", "download", "data_rate", "Mbit/s", "mdi:cloud-download"),
+        YaInternetometrSensor(coordinator, "upload", "upload", "data_rate", "Mbit/s", "mdi:cloud-upload"),
     ]
 
     async_add_entities(sensors, update_before_add=True)
@@ -73,7 +73,7 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
     Attributes:
         `coordinator`: A YaInternetometrDataUpdateCoordinator instance, providing up-to-date ping, download, and upload values.
         `sensor_type` (str): The metric type corresponding to the key in `coordinator.data`. For example, "ping", "download", "upload".
-        `_attr_name` (str): The sensor's display name in the HA interface.
+        `_attr_translation_key` (str): The key for the display name in the Home Assistant interface.
         `_attr_state_class` (str): Specifies that the sensor measures a continuous value ("measurement"), to support history and graphs.
         `_attr_native_unit_of_measurement` (str): Units of measurement, for example, "ms" or "Mbit/s".
         `_attr_icon` (str): sensor icon for the UI (Material Design Icons).
@@ -90,7 +90,7 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
             self, 
             coordinator: DataUpdateCoordinator, 
             sensor_type: str, 
-            name: str, 
+            translation_key: str, 
             device_call: str|None, 
             unit: str, 
             icon: str
@@ -100,7 +100,7 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
 
         # Metrics
         self.sensor_type = sensor_type
-        self._attr_name = name
+        self._attr_translation_key = translation_key
         self._attr_state_class = "measurement"
         self._attr_native_unit_of_measurement = unit
         self._attr_icon = icon

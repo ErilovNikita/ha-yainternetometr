@@ -12,17 +12,17 @@
   "entity": {
     "sensor": {
       "ping": {
-        "name": "Пинг"
+        "name": "Задержка (Ping)"
       },
       "download": {
-        "name": "Загрузка"
+        "name": "Скорость загрузки"
       },
       "upload": {
-        "name": "Отдача"
+        "name": "Скорость отдачи"
       }
     },
     "button": {
-      "refresh": {
+      "update_now": {
         "name": "Обновить сейчас"
       }
     },

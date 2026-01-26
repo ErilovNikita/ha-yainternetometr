@@ -22,7 +22,7 @@
       }
     },
     "button": {
-      "refresh": {
+      "update_now": {
         "name": "Refresh now"
       }
     },
