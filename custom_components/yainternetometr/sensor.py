@@ -52,9 +52,9 @@ async def async_setup_entry(
 
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     sensors = [
-        YaInternetometrSensor(coordinator, SENSOR_PING, SENSOR_PING, None, "ms", "mdi:cloud-refresh-variant"),
-        YaInternetometrSensor(coordinator, SENSOR_DOWNLOAD, SENSOR_DOWNLOAD, "data_rate", "Mbit/s", "mdi:cloud-download"),
-        YaInternetometrSensor(coordinator, SENSOR_UPLOAD, SENSOR_UPLOAD, "data_rate", "Mbit/s", "mdi:cloud-upload"),
+        YaInternetometrSensor(coordinator, entry, SENSOR_PING, SENSOR_PING, None, "ms", "mdi:cloud-refresh-variant"),
+        YaInternetometrSensor(coordinator, entry, SENSOR_DOWNLOAD, SENSOR_DOWNLOAD, "data_rate", "Mbit/s", "mdi:cloud-download"),
+        YaInternetometrSensor(coordinator, entry, SENSOR_UPLOAD, SENSOR_UPLOAD, "data_rate", "Mbit/s", "mdi:cloud-upload"),
     ]
 
     async_add_entities(sensors, update_before_add=True)
@@ -88,6 +88,7 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
 
     def __init__(
             self, 
+            entry: ConfigEntry,
             coordinator: DataUpdateCoordinator, 
             sensor_type: str, 
             translation_key: str, 
@@ -105,7 +106,7 @@ class YaInternetometrSensor(CoordinatorEntity, SensorEntity):
         self._attr_state_class = "measurement"
         self._attr_native_unit_of_measurement = unit
         self._attr_icon = icon
-        self._attr_unique_id = f"{DOMAIN}_{sensor_type}"
+        self._attr_unique_id = f"{entry.entry_id}_{sensor_type}"
 
         # Device class, if specified, for the correct data type in HA
         if device_call:

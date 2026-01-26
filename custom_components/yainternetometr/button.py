@@ -42,7 +42,7 @@ async def async_setup_entry(
         await coordinator.async_request_refresh()
 
     buttons = [
-        YaInternetometrButton(coordinator, "update_speedtest", "update_now", "mdi:refresh", refresh_data)
+        YaInternetometrButton(coordinator, entry, "update_speedtest", "update_now", "mdi:refresh", refresh_data)
     ]
 
     async_add_entities(buttons)
@@ -68,6 +68,7 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
 
     def __init__(
             self, 
+            entry: ConfigEntry,
             coordinator: DataUpdateCoordinator,
             unique_id: str, 
             translation_key: str, 
@@ -80,7 +81,7 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
         super().__init__(coordinator)
         self._attr_has_entity_name = True
         self._attr_translation_key = translation_key
-        self._attr_unique_id = f"{DOMAIN}_button_{unique_id}"
+        self._attr_unique_id = f"{entry.entry_id}_{unique_id}"
         self._default_icon = icon
         self._press_action = press_action
         self._in_progress = False
