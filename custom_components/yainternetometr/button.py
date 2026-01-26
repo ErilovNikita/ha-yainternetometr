@@ -39,7 +39,15 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
 
     async def refresh_data():
-        await coordinator.async_request_refresh()
+        if coordinator._update_lock.locked():
+            _LOGGER.debug("Speedtest already in progress — skipping refresh")
+            return
+        coordinator.async_set_updated_data({})
+        try:
+            await coordinator.async_request_refresh()
+        finally:
+            for entity in hass.data[DOMAIN].get(entry.entry_id, {}).get("entities", []):
+                entity.async_write_ha_state()
 
     buttons = [
         YaInternetometrButton(coordinator, "update_speedtest", "Update speedtest", "mdi:refresh", refresh_data)
@@ -95,7 +103,6 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
         """Handle the button press."""
         if callable(self._press_action):
             await self._press_action()
-            self.async_write_ha_state()
 
     @property
     def available(self) -> bool:
