@@ -122,5 +122,5 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
         return {"in_progress": self._in_progress}
     
     @property
-    def icon(self) -> str:
-        return "mdi:progress-clock" if self.coordinator._update_lock.locked() else self._default_icon
+    def icon(self):
+        return "mdi:progress-clock" if self._in_progress else self._default_icon
