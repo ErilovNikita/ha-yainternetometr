@@ -99,21 +99,12 @@ class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
 
     @property
     def available(self) -> bool:
-        lock = getattr(self.coordinator, "_update_lock", None)
-        if lock is None: 
-            return True
-        return not lock.locked()
+        return not self.coordinator._update_lock.locked()
     
     @property
     def extra_state_attributes(self) -> dict[str, bool]:
-        lock = getattr(self.coordinator, "_update_lock", None)
-        return {
-            "in_progress": lock.locked() if lock else False
-        }
+        return {"in_progress": self.coordinator._update_lock.locked()}
     
     @property
     def icon(self) -> str:
-        lock = getattr(self.coordinator, "_update_lock", None)
-        if lock and lock.locked():
-            return "mdi:progress-clock"
-        return self._default_icon
+        return "mdi:progress-clock" if self.coordinator._update_lock.locked() else self._default_icon
