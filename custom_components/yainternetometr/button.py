@@ -1,10 +1,12 @@
 
 from __future__ import annotations
 import logging
+from collections.abc import Callable, Awaitable
 
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.components.button import ButtonEntity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -43,10 +45,10 @@ async def async_setup_entry(
         YaInternetometrButton(coordinator, "update_speedtest", "Update speedtest", "mdi:refresh", refresh_data)
     ]
 
-    async_add_entities(buttons, update_before_add=True)
+    async_add_entities(buttons)
     _LOGGER.debug("Created %d buttons YaInternetometr", len(buttons))
 
-class YaInternetometrButton(ButtonEntity):
+class YaInternetometrButton(CoordinatorEntity, ButtonEntity):
     """
     YaInternetometr integration button it in Home Assistant.
 
@@ -70,16 +72,17 @@ class YaInternetometrButton(ButtonEntity):
             unique_id: str, 
             name: str, 
             icon: str,
-            press_action: callable,
+            press_action: Callable[[], Awaitable[None]],
     ):
         """Initializing the YaInternetometr button."""
 
         # Metrics
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self._attr_name = name
         self._attr_unique_id = f"{DOMAIN}_button_{unique_id}"
-        self._attr_icon = icon
+        self._default_icon = icon
         self._press_action = press_action
+        self._in_progress = False
 
         # General information about "Device" for combining all buttons
         self._attr_device_info = {
@@ -89,7 +92,28 @@ class YaInternetometrButton(ButtonEntity):
             "model": DEVICE_MODEL,
         }
 
-    async def async_press(self) -> None:
-        """Handle the button press."""
-        if callable(self._press_action):
+    async def async_press(self):
+        if self._in_progress or self.coordinator._update_lock.locked():
+            _LOGGER.debug("Speedtest already in progress — skipping refresh")
+            return
+
+        self._in_progress = True
+        self.async_write_ha_state()
+
+        try:
             await self._press_action()
+        finally:
+            self._in_progress = False
+            self.async_write_ha_state()
+
+    @property
+    def available(self):
+        return not self._in_progress
+    
+    @property
+    def extra_state_attributes(self):
+        return {"in_progress": self._in_progress}
+    
+    @property
+    def icon(self):
+        return "mdi:progress-clock" if self._in_progress else self._default_icon

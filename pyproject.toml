@@ -8,7 +8,7 @@ include = ["custom_components*"]
 
 [project]
 name = "ha-yainternetometr"
-version = "0.1.8"
+version = "1.1.0"
 description = "Integration for Home Assistant for measuring internet speed based on Yandex Internetometer."
 readme = "README.md"
 requires-python = ">=3.11"

@@ -1,0 +1,13 @@
+
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "The configuration is already complete. You can only add one configuration."
+    },
+    "step": {
+      "user": {
+        "description": "Want to start setting up?"
+      }
+    }
+  }
+}
