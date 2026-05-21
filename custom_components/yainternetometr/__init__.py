@@ -16,6 +16,36 @@ from yaspeedtest.client import YaSpeedTest
 _LOGGER = logging.getLogger(__name__)
 
 
+def _normalize_rate_mbps(value: float | int | None, metric_name: str) -> float:
+    """Normalize speed value to Mbit/s.
+
+    `yaspeedtest` should return Mbps, but some providers/versions may return bps.
+    This helper keeps current behavior for normal values and rescales only obviously
+    out-of-range numbers.
+    """
+
+    if value is None:
+        return 0.0
+
+    rate = float(value)
+    if rate < 0:
+        _LOGGER.warning("Received negative %s value: %s", metric_name, value)
+        return 0.0
+
+    # Defensive conversion: values in hundreds of thousands are likely bps.
+    if rate > 100_000:
+        converted = rate / 1_000_000
+        _LOGGER.debug(
+            "Converted %s from bps to Mbit/s: raw=%s normalized=%.3f",
+            metric_name,
+            value,
+            converted,
+        )
+        return converted
+
+    return rate
+
+
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     return True
 
@@ -163,14 +193,28 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
                 async with timeout(TIMEOUT_TEST):
                     ya = await YaSpeedTest().create()
                     result = await ya.run()
+                    _LOGGER.debug("Raw YaSpeedTest result payload: %s", result)
+
+                    upload_mbps = _normalize_rate_mbps(result.upload_mbps, "upload")
+                    download_mbps = _normalize_rate_mbps(result.download_mbps, "download")
+
+                    if upload_mbps == 0 and download_mbps > 1:
+                        _LOGGER.warning(
+                            "Upload speed is zero while download is %.2f Mbit/s. "
+                            "Possible ISP/proxy limitation or changed YaSpeedTest response format.",
+                            download_mbps,
+                        )
+
                     _LOGGER.debug(
                         "SpeedTest results: ping=%.2f ms, download=%.2f Mbps, upload=%.2f Mbps",
-                        result.ping_ms, result.download_mbps, result.upload_mbps
+                        result.ping_ms,
+                        download_mbps,
+                        upload_mbps,
                     )
                     data = {
                         SENSOR_PING: result.ping_ms,
-                        SENSOR_DOWNLOAD: result.download_mbps,
-                        SENSOR_UPLOAD: result.upload_mbps,
+                        SENSOR_DOWNLOAD: download_mbps,
+                        SENSOR_UPLOAD: upload_mbps,
                     }
                     self.async_set_updated_data(data)
                     return data
