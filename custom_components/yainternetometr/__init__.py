@@ -201,26 +201,55 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
                     if upload_mbps == 0 and download_mbps > 1:
                         _LOGGER.warning(
                             "Upload speed is zero while download is %.2f Mbit/s. "
-                            "Running one extra verification pass.",
+                            "Running up to 2 extra verification passes.",
                             download_mbps,
                         )
-                        retry = await YaSpeedTest().create()
-                        retry_result = await retry.run()
-                        _LOGGER.debug("Retry YaSpeedTest result payload: %s", retry_result)
 
-                        retry_upload = _normalize_rate_mbps(retry_result.upload_mbps, "upload_retry")
-                        retry_download = _normalize_rate_mbps(retry_result.download_mbps, "download_retry")
+                        for retry_idx in range(2):
+                            # Small cooldown gives providers a chance to finish
+                            # server-side aggregation for upload values.
+                            await asyncio.sleep(1.5)
 
-                        if retry_upload > upload_mbps:
-                            _LOGGER.info(
-                                "Using retry upload result: first=%.2f Mbit/s retry=%.2f Mbit/s",
-                                upload_mbps,
-                                retry_upload,
+                            retry = await YaSpeedTest().create()
+                            retry_result = await retry.run()
+                            _LOGGER.debug(
+                                "Retry #%d YaSpeedTest result payload: %s",
+                                retry_idx + 1,
+                                retry_result,
                             )
-                            upload_mbps = retry_upload
 
-                        if retry_download > download_mbps:
-                            download_mbps = retry_download
+                            retry_upload = _normalize_rate_mbps(
+                                retry_result.upload_mbps,
+                                f"upload_retry_{retry_idx + 1}",
+                            )
+                            retry_download = _normalize_rate_mbps(
+                                retry_result.download_mbps,
+                                f"download_retry_{retry_idx + 1}",
+                            )
+
+                            if retry_upload > upload_mbps:
+                                _LOGGER.info(
+                                    "Using retry upload result: current=%.2f Mbit/s retry=%.2f Mbit/s",
+                                    upload_mbps,
+                                    retry_upload,
+                                )
+                                upload_mbps = retry_upload
+
+                            if retry_download > download_mbps:
+                                download_mbps = retry_download
+
+                            if upload_mbps > 0:
+                                break
+
+                        if upload_mbps == 0 and self.data is not None:
+                            previous_upload = float(self.data.get(SENSOR_UPLOAD, 0.0))
+                            if previous_upload > 0:
+                                _LOGGER.warning(
+                                    "Upload remains 0.00 Mbit/s after retries; "
+                                    "keeping previous non-zero value %.2f Mbit/s",
+                                    previous_upload,
+                                )
+                                upload_mbps = previous_upload
 
                     _LOGGER.debug(
                         "SpeedTest results: ping=%.2f ms, download=%.2f Mbps, upload=%.2f Mbps",
