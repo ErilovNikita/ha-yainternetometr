@@ -201,9 +201,26 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
                     if upload_mbps == 0 and download_mbps > 1:
                         _LOGGER.warning(
                             "Upload speed is zero while download is %.2f Mbit/s. "
-                            "Possible ISP/proxy limitation or changed YaSpeedTest response format.",
+                            "Running one extra verification pass.",
                             download_mbps,
                         )
+                        retry = await YaSpeedTest().create()
+                        retry_result = await retry.run()
+                        _LOGGER.debug("Retry YaSpeedTest result payload: %s", retry_result)
+
+                        retry_upload = _normalize_rate_mbps(retry_result.upload_mbps, "upload_retry")
+                        retry_download = _normalize_rate_mbps(retry_result.download_mbps, "download_retry")
+
+                        if retry_upload > upload_mbps:
+                            _LOGGER.info(
+                                "Using retry upload result: first=%.2f Mbit/s retry=%.2f Mbit/s",
+                                upload_mbps,
+                                retry_upload,
+                            )
+                            upload_mbps = retry_upload
+
+                        if retry_download > download_mbps:
+                            download_mbps = retry_download
 
                     _LOGGER.debug(
                         "SpeedTest results: ping=%.2f ms, download=%.2f Mbps, upload=%.2f Mbps",
