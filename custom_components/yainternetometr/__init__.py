@@ -46,6 +46,16 @@ def _normalize_rate_mbps(value: float | int | None, metric_name: str) -> float:
     return rate
 
 
+def _extract_rate_mbps(result: object, *candidates: str) -> float | int | None:
+    """Extract speed value from provider result using multiple documented/legacy names."""
+    for field_name in candidates:
+        if hasattr(result, field_name):
+            return getattr(result, field_name)
+        if isinstance(result, dict) and field_name in result:
+            return result[field_name]
+    return None
+
+
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     return True
 
@@ -191,12 +201,29 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
         async with self._update_lock:
             try:
                 async with timeout(TIMEOUT_TEST):
-                    ya = await YaSpeedTest().create()
+                    ya = await YaSpeedTest.create()
                     result = await ya.run()
                     _LOGGER.debug("Raw YaSpeedTest result payload: %s", result)
 
-                    upload_mbps = _normalize_rate_mbps(result.upload_mbps, "upload")
-                    download_mbps = _normalize_rate_mbps(result.download_mbps, "download")
+                    upload_raw = _extract_rate_mbps(
+                        result,
+                        "upload_mbps",
+                        "upload_mbit",
+                        "upload_mbit_s",
+                        "upload",
+                        "upload_bps",
+                    )
+                    download_raw = _extract_rate_mbps(
+                        result,
+                        "download_mbps",
+                        "download_mbit",
+                        "download_mbit_s",
+                        "download",
+                        "download_bps",
+                    )
+
+                    upload_mbps = _normalize_rate_mbps(upload_raw, "upload")
+                    download_mbps = _normalize_rate_mbps(download_raw, "download")
 
                     if upload_mbps == 0 and download_mbps > 1:
                         _LOGGER.warning(
@@ -210,7 +237,7 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
                             # server-side aggregation for upload values.
                             await asyncio.sleep(1.5)
 
-                            retry = await YaSpeedTest().create()
+                            retry = await YaSpeedTest.create()
                             retry_result = await retry.run()
                             _LOGGER.debug(
                                 "Retry #%d YaSpeedTest result payload: %s",
@@ -219,11 +246,25 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
                             )
 
                             retry_upload = _normalize_rate_mbps(
-                                retry_result.upload_mbps,
+                                _extract_rate_mbps(
+                                    retry_result,
+                                    "upload_mbps",
+                                    "upload_mbit",
+                                    "upload_mbit_s",
+                                    "upload",
+                                    "upload_bps",
+                                ),
                                 f"upload_retry_{retry_idx + 1}",
                             )
                             retry_download = _normalize_rate_mbps(
-                                retry_result.download_mbps,
+                                _extract_rate_mbps(
+                                    retry_result,
+                                    "download_mbps",
+                                    "download_mbit",
+                                    "download_mbit_s",
+                                    "download",
+                                    "download_bps",
+                                ),
                                 f"download_retry_{retry_idx + 1}",
                             )
 
@@ -253,12 +294,12 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
 
                     _LOGGER.debug(
                         "SpeedTest results: ping=%.2f ms, download=%.2f Mbps, upload=%.2f Mbps",
-                        result.ping_ms,
+                        float(_extract_rate_mbps(result, "ping_ms", "ping") or 0),
                         download_mbps,
                         upload_mbps,
                     )
                     data = {
-                        SENSOR_PING: result.ping_ms,
+                        SENSOR_PING: float(_extract_rate_mbps(result, "ping_ms", "ping") or 0),
                         SENSOR_DOWNLOAD: download_mbps,
                         SENSOR_UPLOAD: upload_mbps,
                     }
