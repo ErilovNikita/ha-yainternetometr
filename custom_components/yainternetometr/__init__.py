@@ -15,6 +15,8 @@ from yaspeedtest.client import YaSpeedTest
 
 _LOGGER = logging.getLogger(__name__)
 
+UPLOAD_CLASSIC_FALLBACK_SIZE = 1_000_000
+
 
 def _normalize_rate_mbps(value: float | int | None, metric_name: str) -> float:
     """Normalize speed value to Mbit/s.
@@ -46,14 +48,169 @@ def _normalize_rate_mbps(value: float | int | None, metric_name: str) -> float:
     return rate
 
 
+def _result_mapping(result: object) -> dict | None:
+    """Return a dict-like view for provider results that expose one."""
+    if isinstance(result, dict):
+        return result
+
+    for method_name in ("model_dump", "as_dict", "dict"):
+        method = getattr(result, method_name, None)
+        if callable(method):
+            try:
+                data = method()
+            except Exception:
+                continue
+            if isinstance(data, dict):
+                return data
+
+    return None
+
+
 def _extract_rate_mbps(result: object, *candidates: str) -> float | int | None:
     """Extract speed value from provider result using multiple documented/legacy names."""
+    mapping = _result_mapping(result)
+
     for field_name in candidates:
         if hasattr(result, field_name):
             return getattr(result, field_name)
-        if isinstance(result, dict) and field_name in result:
-            return result[field_name]
+        if mapping is not None and field_name in mapping:
+            return mapping[field_name]
     return None
+
+
+def _extract_ping_ms(result: object) -> float:
+    """Extract ping from a provider result."""
+    return float(_extract_rate_mbps(result, "ping_ms", "ping") or 0)
+
+
+def _extract_download_mbps(result: object, metric_name: str = "download") -> float:
+    """Extract and normalize download speed from a provider result."""
+    return _normalize_rate_mbps(
+        _extract_rate_mbps(
+            result,
+            "download_mbps",
+            "download_mbit",
+            "download_mbit_s",
+            "download",
+            "download_bps",
+        ),
+        metric_name,
+    )
+
+
+def _extract_upload_mbps(result: object, metric_name: str = "upload") -> float:
+    """Extract and normalize upload speed from a provider result."""
+    return _normalize_rate_mbps(
+        _extract_rate_mbps(
+            result,
+            "upload_mbps",
+            "upload_mbit",
+            "upload_mbit_s",
+            "upload",
+            "upload_bps",
+        ),
+        metric_name,
+    )
+
+
+def _get_value(source: object, field_name: str, default: object = None) -> object:
+    """Read a field from an object or dict."""
+    if isinstance(source, dict):
+        return source.get(field_name, default)
+    return getattr(source, field_name, default)
+
+
+async def _measure_upload_fallback_mbps(ya: YaSpeedTest) -> float:
+    """Measure upload directly from available upload probes."""
+    upload = _get_value(_get_value(ya, "probes"), "upload")
+    probes = _get_value(upload, "probes", []) or []
+    best_upload_mbps = 0.0
+
+    for probe_idx, probe in enumerate(probes, start=1):
+        url = _get_value(probe, "url")
+        size = _get_value(probe, "size")
+        probe_timeout = _get_value(probe, "timeout")
+
+        try:
+            size_int = int(size or 0)
+        except (TypeError, ValueError):
+            size_int = 0
+
+        if not url or size_int <= 0:
+            _LOGGER.debug(
+                "Skipping upload fallback probe #%d: url=%s size=%s",
+                probe_idx,
+                url,
+                size,
+            )
+            continue
+
+        try:
+            raw_upload_mbps = await ya.measure_upload_peak(url, size_int, probe_timeout)
+        except asyncio.CancelledError:
+            raise
+        except Exception as err:
+            _LOGGER.debug(
+                "Upload fallback probe #%d failed: %s",
+                probe_idx,
+                err,
+            )
+            continue
+
+        upload_mbps = _normalize_rate_mbps(
+            raw_upload_mbps,
+            f"upload_fallback_probe_{probe_idx}",
+        )
+
+        if upload_mbps == 0 and hasattr(ya, "measure_upload"):
+            classic_size = max(size_int, UPLOAD_CLASSIC_FALLBACK_SIZE)
+            _LOGGER.debug(
+                "Running classic upload fallback probe #%d: probe_size=%d classic_size=%d",
+                probe_idx,
+                size_int,
+                classic_size,
+            )
+            try:
+                elapsed, uploaded_bytes = await ya.measure_upload(
+                    url,
+                    classic_size,
+                    probe_timeout,
+                )
+            except asyncio.CancelledError:
+                raise
+            except Exception as err:
+                _LOGGER.debug(
+                    "Classic upload fallback probe #%d failed: %s",
+                    probe_idx,
+                    err,
+                )
+            else:
+                if elapsed and elapsed != float("inf") and uploaded_bytes > 0:
+                    classic_upload_mbps = (uploaded_bytes * 8) / elapsed / 1_000_000
+                    upload_mbps = _normalize_rate_mbps(
+                        classic_upload_mbps,
+                        f"upload_classic_fallback_probe_{probe_idx}",
+                    )
+                    _LOGGER.debug(
+                        "Classic upload fallback probe #%d result: %.2f Mbit/s",
+                        probe_idx,
+                        upload_mbps,
+                    )
+
+        _LOGGER.debug(
+            "Upload fallback probe #%d result: %.2f Mbit/s",
+            probe_idx,
+            upload_mbps,
+        )
+        best_upload_mbps = max(best_upload_mbps, upload_mbps)
+
+    if best_upload_mbps > 0:
+        _LOGGER.info(
+            "Using direct upload fallback result: %.2f Mbit/s",
+            best_upload_mbps,
+        )
+
+    return best_upload_mbps
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -205,101 +362,90 @@ class YaInternetometrDataUpdateCoordinator(DataUpdateCoordinator):
                     result = await ya.run()
                     _LOGGER.debug("Raw YaSpeedTest result payload: %s", result)
 
-                    upload_raw = _extract_rate_mbps(
-                        result,
-                        "upload_mbps",
-                        "upload_mbit",
-                        "upload_mbit_s",
-                        "upload",
-                        "upload_bps",
-                    )
-                    download_raw = _extract_rate_mbps(
-                        result,
-                        "download_mbps",
-                        "download_mbit",
-                        "download_mbit_s",
-                        "download",
-                        "download_bps",
-                    )
-
-                    upload_mbps = _normalize_rate_mbps(upload_raw, "upload")
-                    download_mbps = _normalize_rate_mbps(download_raw, "download")
+                    upload_mbps = _extract_upload_mbps(result)
+                    download_mbps = _extract_download_mbps(result)
+                    ping_ms = _extract_ping_ms(result)
 
                     if upload_mbps == 0 and download_mbps > 1:
                         _LOGGER.warning(
                             "Upload speed is zero while download is %.2f Mbit/s. "
-                            "Running up to 2 extra verification passes.",
+                            "Trying direct upload probe fallback first.",
                             download_mbps,
                         )
 
-                        for retry_idx in range(2):
-                            # Small cooldown gives providers a chance to finish
-                            # server-side aggregation for upload values.
-                            await asyncio.sleep(1.5)
+                        fallback_upload_mbps = await _measure_upload_fallback_mbps(ya)
+                        if fallback_upload_mbps > upload_mbps:
+                            upload_mbps = fallback_upload_mbps
 
-                            retry = await YaSpeedTest.create()
-                            retry_result = await retry.run()
-                            _LOGGER.debug(
-                                "Retry #%d YaSpeedTest result payload: %s",
-                                retry_idx + 1,
-                                retry_result,
+                        if upload_mbps == 0:
+                            _LOGGER.warning(
+                                "Direct upload probe fallback returned 0.00 Mbit/s. "
+                                "Running up to 2 extra verification passes.",
                             )
 
-                            retry_upload = _normalize_rate_mbps(
-                                _extract_rate_mbps(
+                            for retry_idx in range(2):
+                                # Small cooldown gives providers a chance to finish
+                                # server-side aggregation for upload values.
+                                await asyncio.sleep(1.5)
+
+                                retry = await YaSpeedTest.create()
+                                retry_result = await retry.run()
+                                _LOGGER.debug(
+                                    "Retry #%d YaSpeedTest result payload: %s",
+                                    retry_idx + 1,
                                     retry_result,
-                                    "upload_mbps",
-                                    "upload_mbit",
-                                    "upload_mbit_s",
-                                    "upload",
-                                    "upload_bps",
-                                ),
-                                f"upload_retry_{retry_idx + 1}",
-                            )
-                            retry_download = _normalize_rate_mbps(
-                                _extract_rate_mbps(
-                                    retry_result,
-                                    "download_mbps",
-                                    "download_mbit",
-                                    "download_mbit_s",
-                                    "download",
-                                    "download_bps",
-                                ),
-                                f"download_retry_{retry_idx + 1}",
-                            )
-
-                            if retry_upload > upload_mbps:
-                                _LOGGER.info(
-                                    "Using retry upload result: current=%.2f Mbit/s retry=%.2f Mbit/s",
-                                    upload_mbps,
-                                    retry_upload,
                                 )
-                                upload_mbps = retry_upload
 
-                            if retry_download > download_mbps:
-                                download_mbps = retry_download
+                                retry_upload = _extract_upload_mbps(
+                                    retry_result,
+                                    f"upload_retry_{retry_idx + 1}",
+                                )
+                                retry_download = _extract_download_mbps(
+                                    retry_result,
+                                    f"download_retry_{retry_idx + 1}",
+                                )
 
-                            if upload_mbps > 0:
-                                break
+                                if retry_upload > upload_mbps:
+                                    _LOGGER.info(
+                                        "Using retry upload result: current=%.2f Mbit/s retry=%.2f Mbit/s",
+                                        upload_mbps,
+                                        retry_upload,
+                                    )
+                                    upload_mbps = retry_upload
 
-                        if upload_mbps == 0 and self.data is not None:
-                            previous_upload = float(self.data.get(SENSOR_UPLOAD, 0.0))
+                                if retry_download > download_mbps:
+                                    download_mbps = retry_download
+
+                                if upload_mbps > 0:
+                                    break
+
+                        if upload_mbps == 0:
+                            previous_upload = (
+                                float(self.data.get(SENSOR_UPLOAD, 0.0))
+                                if self.data is not None
+                                else 0.0
+                            )
                             if previous_upload > 0:
                                 _LOGGER.warning(
-                                    "Upload remains 0.00 Mbit/s after retries; "
+                                    "Fresh upload measurement remains 0.00 Mbit/s; "
                                     "keeping previous non-zero value %.2f Mbit/s",
                                     previous_upload,
                                 )
                                 upload_mbps = previous_upload
+                            else:
+                                _LOGGER.warning(
+                                    "Fresh upload measurement remains 0.00 Mbit/s "
+                                    "and no previous non-zero value is available.",
+                                )
 
                     _LOGGER.debug(
                         "SpeedTest results: ping=%.2f ms, download=%.2f Mbps, upload=%.2f Mbps",
-                        float(_extract_rate_mbps(result, "ping_ms", "ping") or 0),
+                        ping_ms,
                         download_mbps,
                         upload_mbps,
                     )
                     data = {
-                        SENSOR_PING: float(_extract_rate_mbps(result, "ping_ms", "ping") or 0),
+                        SENSOR_PING: ping_ms,
                         SENSOR_DOWNLOAD: download_mbps,
                         SENSOR_UPLOAD: upload_mbps,
                     }
